@@ -7,18 +7,19 @@
 
 #include "Source.h"
 
+
+
 char *Listing_ptr = 0;
 
-size_t MaxInstrPtr;
+size_t MaxInstrPtr = 0;
 
 //instruction pointer
-size_t InstrPtr = 0;
+volatile size_t InstrPtr = 0;
 
-//cycle pointer
+
+char CycleStack[CYCLE_STACK_SIZE] = {0};
+//cycle stack pointer
 size_t CyclePtr = 0;
-
-//cycle status
-bool CycleStatus = false;
 
 bool IsASymbol(char c){
 	bool result = false;
@@ -30,7 +31,7 @@ bool IsASymbol(char c){
 	case '.':
 	case ',':
 	case '[':
-	case '}':
+	case ']':
 		result = true;
 		break;
 	}
@@ -55,7 +56,7 @@ uint8_t OpenListing(const char *path){
 
 	 char *temp_data = new char [length];
 
-	 size_t result = fread(temp_data, length, sizeof(char), fd);
+	 size_t result = fread(temp_data, sizeof(char), length, fd);
 	 if (result != length){
 		 fprintf(stderr, "Read file error\n");
 		 return -1;
@@ -66,35 +67,44 @@ uint8_t OpenListing(const char *path){
 		 if (IsASymbol(temp_data[i])){
 			 Listing_ptr[MaxInstrPtr++] = temp_data[i];
 			 fprintf(stdout, "%c", temp_data[i]);
-			 if (!(i % 64)){
+			 if ((i >0) && (!(i % 60))){
 				 fprintf(stdout, "\n");
 			 }
 		 }
 	 }
-
+	 fprintf(stdout, "\n");
 
 	return 0;
+}
+
+void CycleStackPush(void){
+	CycleStack[CyclePtr] = InstrPtr;
+	if (CyclePtr < CYCLE_STACK_SIZE){
+		CyclePtr++;
+	}
+}
+
+void CycleStackPop(void){
+	if (CyclePtr > 0){
+		CyclePtr--;
+	}
+	InstrPtr = CycleStack[CyclePtr];
 }
 
 
 char GetCmd(void){
 
-	InstrPtr++;
+	char cmd = Listing_ptr[InstrPtr];
 
 	if (InstrPtr < MaxInstrPtr){
+		InstrPtr++;
 
-		if (Listing_ptr[InstrPtr] == '['){
-			CyclePtr = InstrPtr;
-			CycleStatus = true;
-		}
-		return Listing_ptr[InstrPtr];
 	}
 
-	return 0;//EndOfProgramm
+	return cmd;//EndOfProgramm
 }
 
-
-void ReturnCycle(void){
-	InstrPtr = CyclePtr;
-	CycleStatus = false;
+size_t GetInstrPtrVal(void){
+	return InstrPtr;
 }
+

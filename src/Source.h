@@ -15,11 +15,19 @@
 
 #include <linux/limits.h>
 
+#include "Constant.h"
+
+
+
 bool IsASymbol(char c);
 uint8_t OpenListing(const char *path);
 
 char GetCmd(void);
 
-void ReturnCycle(void);
+void CycleStackPush(void);
+
+void CycleStackPop(void);
+
+size_t GetInstrPtrVal(void);
 
 #endif /* SOURCE_H_ */
