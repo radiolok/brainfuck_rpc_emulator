@@ -16,7 +16,8 @@
 #include <linux/limits.h>
 
 #include "Constant.h"
-
+#include <ittnotify.h>
+#include "Features.h"
 
 
 bool IsASymbol(char c);

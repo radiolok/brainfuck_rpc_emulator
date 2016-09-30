@@ -9,6 +9,7 @@
 
 
 
+
 char *Listing_ptr = 0;
 
 size_t MaxInstrPtr = 0;
@@ -33,6 +34,13 @@ bool IsASymbol(char c){
 	case '[':
 	case ']':
 		result = true;
+		break;
+	default:
+		if (((c >=0x30) &&( c <=0x39)) ||
+				((c>=0x40) && (c <=0x45))||
+				((c>=0x61) && (c <=0x66))){
+			result = true;
+		}
 		break;
 	}
 
@@ -77,7 +85,9 @@ uint8_t OpenListing(const char *path){
 	return 0;
 }
 
+
 void CycleStackPush(void){
+
 	CycleStack[CyclePtr] = InstrPtr;
 	if (CyclePtr < CYCLE_STACK_SIZE){
 		CyclePtr++;

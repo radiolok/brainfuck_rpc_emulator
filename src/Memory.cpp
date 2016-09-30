@@ -15,12 +15,14 @@ size_t MemoryPtr = 0;
 
 
 void NextReg(void){
+	Latency(REG_SHIFT_DELAY);
 	if (MemoryPtr < MEMORY_LENGTH_MAX){
 		MemoryPtr++;
 	}
 }
 
 void PrevReg(void){
+	Latency(REG_SHIFT_DELAY);
 	if (MemoryPtr > 0){
 		MemoryPtr--;
 	}
@@ -28,11 +30,13 @@ void PrevReg(void){
 
 
 void SetVal(char val){
+	Latency(REG_STORE_DELAY);
 	Memory[MemoryPtr] = val;
 }
 
 
 char GetVal(void){
+	Latency(REG_STORE_DELAY);
 	return Memory[MemoryPtr];
 }
 

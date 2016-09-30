@@ -9,7 +9,9 @@
 #define CONSOLE_H_
 
 #include <stdio.h>
-
+#include <ittnotify.h>
+#include "Features.h"
+#include "Constant.h"
 
 void Out(char val);
 

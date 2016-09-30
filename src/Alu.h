@@ -8,7 +8,12 @@
 #ifndef ALU_H_
 #define ALU_H_
 
+#include <ittnotify.h>
+#include "Features.h"
+#include "Constant.h"
+#include <stdio.h>
 
+void SetStep(char step);
 
 char Inc(char val);
 
