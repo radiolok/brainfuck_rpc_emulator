@@ -7,7 +7,42 @@
 
 #include "Features.h"
 
+sigset_t alarm_sig;
 
-void Latency(unsigned int us){
-	usleep(us);
+void WaitRelay(int relay){
+	if (ONE_RELAY_DELAY){
+		usleep(relay * ONE_RELAY_DELAY);
+	}
+}
+
+int PrepareClock(unsigned int freq){
+	int status = 0;
+
+	unsigned int period = 1000000/freq;
+	struct itimerval value;
+
+	/* Block SIGALRM in this thread */
+	sigemptyset (&(alarm_sig));
+	sigaddset (&(alarm_sig), SIGALRM);
+	pthread_sigmask (SIG_BLOCK, &(alarm_sig), NULL);
+
+	/* Set the timer to go off after the first period and then
+	   repetitively */
+	value.it_value.tv_sec = period/1000000;
+	value.it_value.tv_usec = period%1000000;
+	value.it_interval.tv_sec = period/1000000;
+	value.it_interval.tv_usec = period%1000000;
+	status = setitimer (ITIMER_REAL, &value, NULL);
+	if (status != 0)
+		perror ("Failed to set timer");
+
+	return status;
+}
+
+void WaitClock(void){
+	int sig;
+
+		/* Wait for the next SIGALRM */
+	sigwait (&(alarm_sig), &sig);
+
 }

@@ -33,7 +33,7 @@ void SetStep(char step){
 }
 
 char Inc(char val){
-	Latency(ALU_DELAY);
+	WaitRelay(ALU_DELAY);
 	char result = val + alu_step;
 	alu_step = 1;
 	return result;
@@ -41,7 +41,7 @@ char Inc(char val){
 }
 
 char Dec(char val){
-	Latency(ALU_DELAY);
+	WaitRelay(ALU_DELAY);
 	char result = val - alu_step;
 	alu_step = 1;
 	return result;

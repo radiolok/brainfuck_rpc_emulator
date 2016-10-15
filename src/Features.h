@@ -9,8 +9,18 @@
 #define FEATURES_H_
 
 #include <unistd.h>
+#include <signal.h>
+#include <stdio.h>
 
+#include <sys/select.h>
+#include <sys/time.h>
 
-void Latency(unsigned int us);
+#include "Constant.h"
+
+void WaitRelay(int relay);
+
+int PrepareClock(unsigned int freq);
+
+void WaitClock(void);
 
 #endif /* FEATURES_H_ */

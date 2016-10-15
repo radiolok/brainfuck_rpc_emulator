@@ -8,13 +8,13 @@
 #include "Console.h"
 
 void Out(char val){
-	Latency(CONSOLE_LOAD_DELAY);
+	WaitRelay(CONSOLE_LOAD_DELAY);
 	putc(val, stderr);
 }
 
 
 char In(void){
-	Latency(CONSOLE_STORE_DELAY);
+	WaitRelay(CONSOLE_STORE_DELAY);
 	char val = 0;
 	int data = getc(stdin);
 	if (data != EOF){
