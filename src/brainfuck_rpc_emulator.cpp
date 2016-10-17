@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <unistd.h>
+#include <stdlib.h>
 #include "Source.h"
 #include "Memory.h"
 #include "Alu.h"
