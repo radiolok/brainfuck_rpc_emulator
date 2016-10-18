@@ -12,11 +12,11 @@
 #include "Features.h"
 #include "Constant.h"
 #include <stdio.h>
+#include "Source.h"
 
-void SetStep(char step);
 
-char Inc(char val);
+uint8_t Inc(uint8_t val);
 
-char Dec(char val);
+uint8_t Dec(uint8_t val);
 
 #endif /* ALU_H_ */

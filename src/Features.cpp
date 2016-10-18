@@ -9,10 +9,26 @@
 
 sigset_t alarm_sig;
 
+bool delay = true;
+
+void DelayOff(void)
+{
+	delay = false;
+}
+
+bool IsDelay(void)
+{
+	return delay;
+}
+
 void WaitRelay(int relay){
-	if (ONE_RELAY_DELAY){
-		usleep(relay * ONE_RELAY_DELAY);
+	if (IsDelay())
+	{
+		if (ONE_RELAY_DELAY){
+			usleep(relay * ONE_RELAY_DELAY);
+		}
 	}
+
 }
 
 int PrepareClock(unsigned int freq){
@@ -40,9 +56,12 @@ int PrepareClock(unsigned int freq){
 }
 
 void WaitClock(void){
+	if (IsDelay())
+	{
 	int sig;
 
 		/* Wait for the next SIGALRM */
 	sigwait (&(alarm_sig), &sig);
+	}
 
 }

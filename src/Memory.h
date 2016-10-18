@@ -11,8 +11,12 @@
 #include "Constant.h"
 #include "stddef.h"
 #include <ittnotify.h>
+#include <limits.h>
+#include <stdint.h>
 #include "Features.h"
-#include "Constant.h"
+#include "Source.h"
+
+#include <stdint.h>
 
 
 void NextReg(void);
@@ -20,10 +24,10 @@ void NextReg(void);
 void PrevReg(void);
 
 
-void SetVal(char val);
+void SetVal(uint8_t val);
 
 
-char GetVal(void);
+uint8_t GetVal(void);
 
 size_t GetPtrVal();
 

@@ -18,17 +18,24 @@
 #include "Constant.h"
 #include <ittnotify.h>
 #include "Features.h"
+#include "Alu.h"
 
 
-bool IsASymbol(char c);
+bool IsASymbol(uint8_t c);
 uint8_t OpenListing(const char *path);
 
-char GetCmd(void);
+uint8_t GetCmd(void);
 
-void CycleStackPush(void);
+uint8_t GetBias();
 
-void CycleStackPop(void);
+int CycleStackPush(void);
 
-size_t GetInstrPtrVal(void);
+int CycleStackPop(bool);
+
+size_t GetIp(void);
+
+void PrintProgram(void);
+
+void IncIp(void);
 
 #endif /* SOURCE_H_ */

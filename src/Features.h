@@ -17,6 +17,11 @@
 
 #include "Constant.h"
 
+void DelayOff(void);
+
+bool IsDelay(void);
+
+
 void WaitRelay(int relay);
 
 int PrepareClock(unsigned int freq);

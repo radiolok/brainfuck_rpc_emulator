@@ -7,16 +7,25 @@
 
 #include "Console.h"
 
-void Out(char val){
+void Out(uint8_t val){
 	WaitRelay(CONSOLE_LOAD_DELAY);
-	putc(val, stderr);
+	if (val < 0x20)
+	{
+		fprintf(stderr, "(%02x)", val);
+	}
+	else{
+		fprintf(stderr, "%c", val);
+	}
+
 }
 
 
-char In(void){
+uint8_t In(void){
 	WaitRelay(CONSOLE_STORE_DELAY);
-	char val = 0;
+	uint8_t val = 0;
+	putc('>', stderr);
 	int data = getc(stdin);
+	putc('\n', stderr);
 	if (data != EOF){
 		val = (char)data;
 

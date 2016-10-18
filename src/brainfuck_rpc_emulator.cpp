@@ -9,6 +9,8 @@
 #include <iostream>
 #include <unistd.h>
 #include <stdlib.h>
+
+#include <stdint.h>
 #include "Source.h"
 #include "Memory.h"
 #include "Alu.h"
@@ -36,8 +38,10 @@ __itt_string_handle* handle_tick = __itt_string_handle_create("tick");
 __itt_string_handle* handle_tack = __itt_string_handle_create("tack");
 
 
-int ExecCmd(char cmd){
-	int status = 1;
+bool InstrumentedOutput = false;
+
+int ExecCmd(uint8_t cmd){
+	int status = SUCCESS;
 	switch(cmd){
 		case '>':
 			__itt_task_begin(domain, __itt_null, __itt_null, handle_next);
@@ -61,14 +65,12 @@ int ExecCmd(char cmd){
 			break;
 		case '[':
 			__itt_task_begin(domain, __itt_null, __itt_null, handle_begin);
-			CycleStackPush();
+			status = CycleStackPush();
 			__itt_task_end(domain);
 			break;
 		case ']':
 			__itt_task_begin(domain, __itt_null, __itt_null, handle_loop);
-			if (GetVal()){
-				CycleStackPop();
-			}
+			status = CycleStackPop(GetVal());
 			__itt_task_end(domain);
 
 			break;
@@ -83,10 +85,10 @@ int ExecCmd(char cmd){
 			__itt_task_end(domain);
 			break;
 		case 0://End of the program
-			status = 0;
+			status = ERROR;
 			break;
 		default:
-			SetStep(cmd);
+			break;
 		}
 	return status;
 }
@@ -96,29 +98,37 @@ int ExecCmd(char cmd){
 
 bool front = UP_FRONT;
 
-int Tick(char *cmd){
-	__itt_task_begin(domain, __itt_null, __itt_null, handle_tick);
-	*cmd = GetCmd();
+int Tick(void){
 
-	return *cmd;
-}
-
-int Tack(char *cmd){
 	__itt_task_begin(domain, __itt_null, __itt_null, handle_tack);
-	int status = ExecCmd(*cmd);
+	if (InstrumentedOutput)
+	{
+		fprintf(stderr, "IP:@%04lX\tCMD:'%c'\tMP:@%04lX\tVP:@%02x\n",GetIp(), GetCmd(), GetPtrVal(), GetVal());
+	}
+	int status = ExecCmd(GetCmd());
+
 	return status;
 }
 
+int Tack(){
+
+	__itt_task_begin(domain, __itt_null, __itt_null, handle_tick);
+	IncIp();
+
+	return 1;
+}
 
 
-int Period(char *cmd){
+
+int Period(){
+
 	int status = 1;
 	if (front == UP_FRONT){
-		status = Tick(cmd);
+		status = Tick();
 		front = DOWN_FRONT;
 	}
 	else{
-		status = Tack(cmd);
+		status = Tack();
 		front = UP_FRONT;
 	}
 	WaitClock();
@@ -129,8 +139,7 @@ int Period(char *cmd){
 
 int ExecProgram(void){
 	//Start Program:
-	char cmd = 0;
-	while(Period(&cmd)){
+	while(Period() == SUCCESS){
 
 	}
 	return 0;
@@ -143,7 +152,7 @@ int main(int argc, char *argv[]) {
 	int status = -1;
 	unsigned int clock = 0;
 	int c = 0;
-	while((c = getopt(argc, argv, "f:c:")) != -1){
+	while((c = getopt(argc, argv, "f:c:di")) != -1){
 		switch(c)
 		{
 		case 'f':
@@ -152,16 +161,26 @@ int main(int argc, char *argv[]) {
 		case 'c':
 			clock = atol(optarg);
 			break;
+		case 'd':
+			DelayOff();
+			break;
+		case 'i':
+			InstrumentedOutput = true;
+			break;
 		}
 	}
 	if (status){
 		fprintf(stderr, "Parameters error\n");
 		return -1;
 	}
-	if (clock == 0){
-		clock = DEFAULT_FREQUENCY;
+	if (IsDelay())
+	{
+		if (clock == 0){
+			clock = DEFAULT_FREQUENCY;
+		}
+		PrepareClock(clock);
+
 	}
-	PrepareClock(clock);
 
 	ExecProgram();
 

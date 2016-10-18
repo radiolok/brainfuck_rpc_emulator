@@ -13,11 +13,12 @@
 #define CYCLE_STACK_SIZE 128
 
 
-
+#define ERROR 0
+#define SUCCESS 1
 
 
 //All delays in useconds
-#define ONE_RELAY_DELAY (1000)
+#define ONE_RELAY_DELAY (300)
 
 #if ONE_RELAY_DELAY == 0
 
@@ -25,17 +26,17 @@
 
 #else
 
-	#define DEFAULT_FREQUENCY 50
+	#define DEFAULT_FREQUENCY 100
 
 #endif
 
-#define ALU_DELAY (4)
-#define REG_SHIFT_DELAY (3)
+#define ALU_DELAY (8)
+#define REG_SHIFT_DELAY (8)
 #define REG_LOAD_DELAY (1)
 #define REG_STORE_DELAY (4)
 
 
-#define CONSOLE_LOAD_DELAY (1)
+#define CONSOLE_LOAD_DELAY (2)
 #define CONSOLE_STORE_DELAY (4)
 
 #endif /* CONSTANT_H_ */

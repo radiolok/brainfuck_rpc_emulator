@@ -9,33 +9,33 @@
 
 
 
-char Memory[MEMORY_LENGTH_MAX] = {0};
+uint8_t Memory[USHRT_MAX] = {0};
 
-size_t MemoryPtr = 0;
+uint16_t MemoryPtr = 0;
 
 
 void NextReg(void){
 	WaitRelay(REG_SHIFT_DELAY);
 	if (MemoryPtr < MEMORY_LENGTH_MAX){
-		MemoryPtr++;
+		MemoryPtr += GetBias();
 	}
 }
 
 void PrevReg(void){
 	WaitRelay(REG_SHIFT_DELAY);
 	if (MemoryPtr > 0){
-		MemoryPtr--;
+		MemoryPtr -= GetBias();
 	}
 }
 
 
-void SetVal(char val){
+void SetVal(uint8_t val){
 	WaitRelay(REG_STORE_DELAY);
 	Memory[MemoryPtr] = val;
 }
 
 
-char GetVal(void){
+uint8_t GetVal(void){
 	WaitRelay(REG_STORE_DELAY);
 	return Memory[MemoryPtr];
 }

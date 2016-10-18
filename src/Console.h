@@ -9,14 +9,15 @@
 #define CONSOLE_H_
 
 #include <stdio.h>
+#include <stdint.h>
 #include <ittnotify.h>
 #include "Features.h"
 #include "Constant.h"
 
-void Out(char val);
+void Out(uint8_t val);
 
 
-char In(void);
+uint8_t In(void);
 
 
 #endif /* CONSOLE_H_ */
