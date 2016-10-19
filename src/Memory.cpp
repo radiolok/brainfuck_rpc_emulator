@@ -14,18 +14,20 @@ uint8_t Memory[USHRT_MAX] = {0};
 uint16_t MemoryPtr = 0;
 
 
-void NextReg(void){
+int NextReg(void){
 	WaitRelay(REG_SHIFT_DELAY);
-	if (MemoryPtr < MEMORY_LENGTH_MAX){
-		MemoryPtr += GetBias();
-	}
+
+	MemoryPtr += GetBias();
+
+	return SUCCESS;
 }
 
-void PrevReg(void){
+int PrevReg(void){
 	WaitRelay(REG_SHIFT_DELAY);
-	if (MemoryPtr > 0){
-		MemoryPtr -= GetBias();
-	}
+
+	MemoryPtr -= GetBias();
+
+	return SUCCESS;
 }
 
 

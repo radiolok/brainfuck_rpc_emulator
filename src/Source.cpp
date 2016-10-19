@@ -36,6 +36,7 @@ bool IsASymbol(uint8_t c){
 	case ',':
 	case '[':
 	case ']':
+	case '~': //is a debug symbol
 		result = true;
 		break;
 	default:
@@ -179,6 +180,11 @@ int CycleStackPop(bool nonzero){
 		CycleStack[CyclePtr] = InstrPtr;
 	}
 	return SUCCESS;
+}
+
+size_t GetStackPtr()
+{
+	return CyclePtr;
 }
 
 

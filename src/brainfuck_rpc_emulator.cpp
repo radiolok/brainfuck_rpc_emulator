@@ -38,19 +38,48 @@ __itt_string_handle* handle_tick = __itt_string_handle_create("tick");
 __itt_string_handle* handle_tack = __itt_string_handle_create("tack");
 
 
+long long unsigned int OverallInstructionNumber = 0;
+
 bool InstrumentedOutput = false;
+
+void PrintDebug()
+{
+	if (InstrumentedOutput)
+	{
+		fprintf(stderr, "IP:@%04lX\t", GetIp());
+
+		switch (GetCmd()){
+		case '>':
+		case '<':
+		case '+':
+		case '-':
+			fprintf(stderr, "CMD:'%c(%d)'\t",GetCmd(), GetBias());
+			break;
+		case '[':
+		case ']':
+			fprintf(stderr, "CMD:'%c'(%lu)\t",GetCmd(), GetStackPtr());
+			break;
+		default:
+			fprintf(stderr, "CMD:'%c'\t\t",GetCmd());
+			break;
+		}
+		fprintf(stderr, "MP:@%04lX\tVP:@%02x\n", GetPtrVal(), GetVal());
+	}
+
+}
+
 
 int ExecCmd(uint8_t cmd){
 	int status = SUCCESS;
 	switch(cmd){
 		case '>':
 			__itt_task_begin(domain, __itt_null, __itt_null, handle_next);
-			NextReg();
+			status = NextReg();
 			__itt_task_end(domain);
 			break;
 		case '<':
 			__itt_task_begin(domain, __itt_null, __itt_null, handle_prev);
-			PrevReg();
+			status = PrevReg();
 			__itt_task_end(domain);
 			break;
 		case '+':
@@ -84,6 +113,9 @@ int ExecCmd(uint8_t cmd){
 			SetVal(In());
 			__itt_task_end(domain);
 			break;
+		case '~':
+			PrintDebug();
+			break;
 		case 0://End of the program
 			status = ERROR;
 			break;
@@ -101,10 +133,15 @@ bool front = UP_FRONT;
 int Tick(void){
 
 	__itt_task_begin(domain, __itt_null, __itt_null, handle_tack);
-	if (InstrumentedOutput)
+
+
+	PrintDebug();
+	OverallInstructionNumber++;
+	if ((OverallInstructionNumber) && !(OverallInstructionNumber % 1000000))
 	{
-		fprintf(stderr, "IP:@%04lX\tCMD:'%c'\tMP:@%04lX\tVP:@%02x\n",GetIp(), GetCmd(), GetPtrVal(), GetVal());
+		fprintf(stderr, "OverallInstructionNumber = %lluM\r", OverallInstructionNumber / 1000000);
 	}
+
 	int status = ExecCmd(GetCmd());
 
 	return status;

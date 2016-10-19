@@ -22,11 +22,16 @@
 
 
 bool IsASymbol(uint8_t c);
+bool IsAIncrementer(uint8_t c);
+
 uint8_t OpenListing(const char *path);
+
 
 uint8_t GetCmd(void);
 
 uint8_t GetBias();
+
+size_t GetStackPtr();
 
 int CycleStackPush(void);
 

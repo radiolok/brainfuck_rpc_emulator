@@ -19,9 +19,9 @@
 #include <stdint.h>
 
 
-void NextReg(void);
+int NextReg(void);
 
-void PrevReg(void);
+int PrevReg(void);
 
 
 void SetVal(uint8_t val);
