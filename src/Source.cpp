@@ -13,9 +13,7 @@ cmd_t *Listing_ptr = 0;
 
 uint32_t MaxInstrPtr = 0;
 
-//instruction pointer
-volatile uint32_t InstrPtr = 0;
-
+uint32_t InstrPtr = 0;
 
 uint8_t CycleStack[CYCLE_STACK_SIZE] = {0};
 //cycle stack pointer
@@ -143,48 +141,78 @@ uint8_t OpenListing(const char *path){
 }
 
 
-int CycleStackPush(void){
-
-	CycleStack[CyclePtr] = InstrPtr;
+int CycleAddLayer(void)
+{
+	CycleStack[CyclePtr]  = InstrPtr;
+	if (InstrumentedOutput())
+	{
+		fprintf(stderr, "Add:SP:%d, IP:@%04X\n", CyclePtr, InstrPtr);
+	}
 	if (CyclePtr < CYCLE_STACK_SIZE){
 		CyclePtr++;
-		if (InstrumentedOutput())
-		{
-			fprintf(stderr, "CycleStack++(%d)\n", CyclePtr);
-		}
 	}
 	else
 	{
 		fprintf(stderr, "CycleStack++ OVF!\n");
 		return ERROR;
 	}
+	/*CycleStack[CyclePtr]  = InstrPtr;*/
 	return SUCCESS;
 }
 
-int CycleStackPop(bool nonzero){
+int CycleRemoveLayer(void)
+{
+	if (InstrumentedOutput())
+	{
+		fprintf(stderr, "Remove:SP:%d, IP:@%04X\n", CyclePtr, InstrPtr);
+	}
 	if (CyclePtr > 0){
 		CyclePtr--;
-		if (InstrumentedOutput())
-		{
-			fprintf(stderr, "CycleStack--(%d)\n", CyclePtr);
-		}
 	}
 	else
 	{
 		fprintf(stderr, "CycleStack-- OVF!\n");
 		return ERROR;
 	}
-	if (nonzero)
+
+	return SUCCESS;
+}
+
+int CycleRestartLayer()
+{
+	InstrPtr = (CyclePtr > 0) ?
+			CycleStack[CyclePtr -1] :
+			CycleStack[CyclePtr];
+	if (InstrumentedOutput())
 	{
-		InstrPtr = CycleStack[CyclePtr];
-		CycleStackPush();
-	}
-	else
-	{
-		CycleStack[CyclePtr] = InstrPtr;
+		fprintf(stderr, "Restart:SP:%d, IP:@%04X\n", CyclePtr, InstrPtr);
 	}
 	return SUCCESS;
 }
+
+int CycleSkipLayer(void)
+{
+	size_t i = 1;
+	while (i)
+	{
+		IncIp();
+		switch (GetCmd())
+		{
+		case '[':
+			i++;
+			break;
+		case ']':
+			i--;
+			break;
+		}
+	}
+	if (InstrumentedOutput())
+	{
+		fprintf(stderr, "Skip:SP:%d, IP:@%04X\n", CyclePtr, InstrPtr);
+	}
+	return SUCCESS;
+}
+
 
 size_t GetStackPtr()
 {
@@ -214,7 +242,6 @@ void IncIp(void)
 	if (InstrPtr < MaxInstrPtr)
 	{
 		InstrPtr++;
-
 	}
 }
 

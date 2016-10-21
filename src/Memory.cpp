@@ -48,10 +48,6 @@ int NextReg(void){
 	WaitRelay(REG_SHIFT_DELAY);
 
 	MemoryPtr += GetBias();
-	if (InstrumentedOutput())
-	{
-		fprintf(stderr, "MemoryPtr+%d = %04X \n", GetBias(), MemoryPtr);
-	}
 	return SUCCESS;
 }
 
@@ -59,10 +55,6 @@ int PrevReg(void){
 	WaitRelay(REG_SHIFT_DELAY);
 
 	MemoryPtr -= GetBias();
-	if (InstrumentedOutput())
-	{
-		fprintf(stderr, "MemoryPtr-%d = %04X \n", GetBias(), MemoryPtr);
-	}
 	return SUCCESS;
 }
 

@@ -27,15 +27,22 @@ bool IsAIncrementer(uint8_t c);
 uint8_t OpenListing(const char *path);
 
 
+
 uint8_t GetCmd(void);
 
 uint8_t GetBias();
 
 size_t GetStackPtr();
 
-int CycleStackPush(void);
+int CycleAddLayer(void);
 
-int CycleStackPop(bool);
+int CycleSkipLayer(void);
+
+int CycleRemoveLayer(void);
+
+int CycleRestartLayer(void);
+
+int CycleStackGet(void);
 
 size_t GetIp(void);
 

@@ -12,10 +12,7 @@
 uint8_t Inc(uint8_t val){
 	WaitRelay(ALU_DELAY);
 	uint8_t result = val + GetBias();
-	if (InstrumentedOutput())
-	{
-		fprintf(stderr, "Val+%d = %04X \n", GetBias(), result);
-	}
+
 	return result;
 
 }
@@ -23,9 +20,6 @@ uint8_t Inc(uint8_t val){
 uint8_t Dec(uint8_t val){
 	WaitRelay(ALU_DELAY);
 	uint8_t result = val - GetBias();
-	if (InstrumentedOutput())
-	{
-		fprintf(stderr, "Val-%d = %04X \n", GetBias(), result);
-	}
+
 	return result;
 }

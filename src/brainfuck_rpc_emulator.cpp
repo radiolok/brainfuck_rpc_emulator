@@ -96,12 +96,27 @@ int ExecCmd(uint8_t cmd){
 			break;
 		case '[':
 			__itt_task_begin(domain, __itt_null, __itt_null, handle_begin);
-			status = CycleStackPush();
+			if (GetVal())
+			{
+				status = CycleAddLayer();
+			}
+			else
+			{
+				status = CycleSkipLayer();
+			}
 			__itt_task_end(domain);
 			break;
 		case ']':
 			__itt_task_begin(domain, __itt_null, __itt_null, handle_loop);
-			status = CycleStackPop(GetVal());
+			if (GetVal())
+			{
+				status = CycleRestartLayer();
+			}
+			else
+			{
+				status = CycleRemoveLayer();
+			}
+
 			__itt_task_end(domain);
 
 			break;

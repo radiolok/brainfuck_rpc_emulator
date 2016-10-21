@@ -42,7 +42,6 @@ uint8_t In(void){
 	{
 		fprintf(stderr, ">");
 		scanf("%s", InputString);
-		fprintf(stderr, "\n");
 		size_t length = GetCharLength(InputString);
 		if (length != 0)
 		{
