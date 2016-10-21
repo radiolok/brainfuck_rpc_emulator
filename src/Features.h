@@ -21,6 +21,9 @@ void DelayOff(void);
 
 bool IsDelay(void);
 
+void SetInstrumented();
+
+bool InstrumentedOutput();
 
 void WaitRelay(int relay);
 

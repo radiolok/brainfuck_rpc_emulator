@@ -8,6 +8,8 @@
 #ifndef CONSTANT_H_
 #define CONSTANT_H_
 
+#include "stdint.h"
+
 #define MEMORY_LENGTH_MAX 30000
 
 #define CYCLE_STACK_SIZE 128
@@ -38,5 +40,11 @@
 
 #define CONSOLE_LOAD_DELAY (2)
 #define CONSOLE_STORE_DELAY (4)
+
+
+typedef struct _cmd_t{
+	uint8_t cmd;
+	uint8_t bias;
+}cmd_t;
 
 #endif /* CONSTANT_H_ */

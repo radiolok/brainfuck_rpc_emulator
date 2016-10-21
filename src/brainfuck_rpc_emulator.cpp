@@ -40,11 +40,11 @@ __itt_string_handle* handle_tack = __itt_string_handle_create("tack");
 
 long long unsigned int OverallInstructionNumber = 0;
 
-bool InstrumentedOutput = false;
+
 
 void PrintDebug()
 {
-	if (InstrumentedOutput)
+	if (InstrumentedOutput())
 	{
 		fprintf(stderr, "IP:@%04lX\t", GetIp());
 
@@ -63,7 +63,9 @@ void PrintDebug()
 			fprintf(stderr, "CMD:'%c'\t\t",GetCmd());
 			break;
 		}
-		fprintf(stderr, "MP:@%04lX\tVP:@%02x\n", GetPtrVal(), GetVal());
+		char MemoryStr[256];
+		PrintMemory(MemoryStr, 7);
+		fprintf(stderr, "%s\n", MemoryStr);
 	}
 
 }
@@ -202,7 +204,7 @@ int main(int argc, char *argv[]) {
 			DelayOff();
 			break;
 		case 'i':
-			InstrumentedOutput = true;
+			SetInstrumented();
 			break;
 		}
 	}

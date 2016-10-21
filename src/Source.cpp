@@ -8,10 +8,6 @@
 #include "Source.h"
 
 
-typedef struct _cmd_t{
-	uint8_t cmd;
-	uint8_t bias;
-}cmd_t;
 
 cmd_t *Listing_ptr = 0;
 
@@ -152,6 +148,10 @@ int CycleStackPush(void){
 	CycleStack[CyclePtr] = InstrPtr;
 	if (CyclePtr < CYCLE_STACK_SIZE){
 		CyclePtr++;
+		if (InstrumentedOutput())
+		{
+			fprintf(stderr, "CycleStack++(%d)\n", CyclePtr);
+		}
 	}
 	else
 	{
@@ -164,6 +164,10 @@ int CycleStackPush(void){
 int CycleStackPop(bool nonzero){
 	if (CyclePtr > 0){
 		CyclePtr--;
+		if (InstrumentedOutput())
+		{
+			fprintf(stderr, "CycleStack--(%d)\n", CyclePtr);
+		}
 	}
 	else
 	{

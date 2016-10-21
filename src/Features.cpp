@@ -31,6 +31,18 @@ void WaitRelay(int relay){
 
 }
 
+bool InstrumentedOutputVal = false;
+
+void SetInstrumented()
+{
+	InstrumentedOutputVal = true;
+}
+
+bool InstrumentedOutput()
+{
+	return InstrumentedOutputVal;
+}
+
 int PrepareClock(unsigned int freq){
 	int status = 0;
 

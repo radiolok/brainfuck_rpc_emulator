@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 
+void PrintMemory(char *str, size_t mem);
 
 int NextReg(void);
 
