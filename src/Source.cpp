@@ -96,21 +96,29 @@ uint8_t OpenListing(const char *path){
 		 fprintf(stderr, "Read file error\n");
 		 return -1;
 	 }
-
-	 fprintf(stderr,"Brainfuck program:\n");
-	 for (size_t i = 0 ; i < length; ++i)
+	 if (InstrumentedOutput())
 	 {
-		 if (IsASymbol(temp_data[i]))
+		 fprintf(stderr,"Brainfuck program:\n");
+		 for (size_t i = 0 ; i < length; ++i)
 		 {
-			 if (IsAIncrementer(temp_data[i]))
+			 if (IsASymbol(temp_data[i]))
 			 {
-				 if (MaxInstrPtr != 0)
+				 if (IsAIncrementer(temp_data[i]))
 				 {
-					 if (Listing_ptr[MaxInstrPtr-1].cmd == temp_data[i])
-					 {//commands are equal, inc bias
-						 Listing_ptr[MaxInstrPtr-1].bias++;
+					 if (MaxInstrPtr != 0)
+					 {
+						 if (Listing_ptr[MaxInstrPtr-1].cmd == temp_data[i])
+						 {//commands are equal, inc bias
+							 Listing_ptr[MaxInstrPtr-1].bias++;
+						 }
+						 else{
+							 Listing_ptr[MaxInstrPtr].cmd = temp_data[i];
+							 Listing_ptr[MaxInstrPtr].bias = 1;
+							 MaxInstrPtr++;
+						 }
 					 }
-					 else{
+					 else
+					 {
 						 Listing_ptr[MaxInstrPtr].cmd = temp_data[i];
 						 Listing_ptr[MaxInstrPtr].bias = 1;
 						 MaxInstrPtr++;
@@ -119,24 +127,18 @@ uint8_t OpenListing(const char *path){
 				 else
 				 {
 					 Listing_ptr[MaxInstrPtr].cmd = temp_data[i];
-					 Listing_ptr[MaxInstrPtr].bias = 1;
+					 Listing_ptr[MaxInstrPtr].bias = 0;
 					 MaxInstrPtr++;
 				 }
-			 }
-			 else
-			 {
-				 Listing_ptr[MaxInstrPtr].cmd = temp_data[i];
-				 Listing_ptr[MaxInstrPtr].bias = 0;
-				 MaxInstrPtr++;
-			 }
-			 fprintf(stderr, "%c", temp_data[i]);
-			 if ((i >0) && (!(i % 60))){
-				 fprintf(stderr, "\n");
+				 fprintf(stderr, "%c", temp_data[i]);
+				 if ((i >0) && (!(i % 60))){
+					 fprintf(stderr, "\n");
+				 }
 			 }
 		 }
+		 fprintf(stderr, "\n");
+		 PrintProgram();
 	 }
-	 fprintf(stderr, "\n");
-	 PrintProgram();
 	return 0;
 }
 
