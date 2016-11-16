@@ -10,11 +10,9 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <ittnotify.h>
-#include "Features.h"
-#include "Constant.h"
 
-void Out(uint8_t val);
+
+void Out(uint16_t val);
 
 
 uint8_t In(void);

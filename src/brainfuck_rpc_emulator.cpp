@@ -9,235 +9,163 @@
 #include <iostream>
 #include <unistd.h>
 #include <stdlib.h>
-
+#include <stdio.h>
 #include <stdint.h>
-#include "Source.h"
-#include "Memory.h"
-#include "Alu.h"
+#include <cstring>
+
 #include "Console.h"
-#include "Constant.h"
-#include "Features.h"
-#include <ittnotify.h>
+
+
+#include <fstream>
+
+#include <vector>
+
+#include "bf_definitions.h"
+
+#include "cmd.h"
 
 using namespace std;
 
-__itt_domain* domain = __itt_domain_create("Brainfuck.machine");
-__itt_string_handle* handle_main = __itt_string_handle_create("main");
+uint8_t  LoadImage(std::ifstream &File, BfHeader_t *Header, uint16_t *MemoryPtr){
+	uint8_t status = 0;
 
-__itt_string_handle* handle_next = __itt_string_handle_create("next");
-__itt_string_handle* handle_prev = __itt_string_handle_create("prev");
-__itt_string_handle* handle_inc = __itt_string_handle_create("inc");
-__itt_string_handle* handle_dec = __itt_string_handle_create("dec");
-__itt_string_handle* handle_cycle = __itt_string_handle_create("cycle");
-__itt_string_handle* handle_begin = __itt_string_handle_create("begin");
-__itt_string_handle* handle_loop = __itt_string_handle_create("loop");
-__itt_string_handle* handle_in = __itt_string_handle_create("in");
-__itt_string_handle* handle_out = __itt_string_handle_create("out");
+	File.read(reinterpret_cast<char *>(Header), sizeof(BfHeader_t));
 
-__itt_string_handle* handle_tick = __itt_string_handle_create("tick");
-__itt_string_handle* handle_tack = __itt_string_handle_create("tack");
+	BfSection_t Code;
+	Code.Position.Byte.high = Header->Code.Position.Byte.high;
+	Code.Position.Byte.low = Header->Code.Position.Byte.low;
 
+	Code.Length.Byte.high = Header->Code.Length.Byte.high;
+	Code.Length.Byte.low = Header->Code.Length.Byte.low;
 
-long long unsigned int OverallInstructionNumber = 0;
+	BfSection_t Data;
+	Data.Position.Byte.high = Header->Data.Position.Byte.high;
+	Data.Position.Byte.low = Header->Data.Position.Byte.low;
 
+	Data.Length.Byte.high = Header->Data.Length.Byte.high;
+	Data.Length.Byte.low = Header->Data.Length.Byte.low;
 
+	File.read(reinterpret_cast<char *>(MemoryPtr+Code.Position.Word), sizeof(uint16_t)*Code.Length.Word);
+	if (Data.Length.Word != 0){
+		File.read(reinterpret_cast<char *>(MemoryPtr+Data.Position.Word), sizeof(uint16_t)*Data.Length.Word);
+	}
 
-void PrintDebug()
-{
-	if (InstrumentedOutput())
-	{
-		fprintf(stderr, "IP:@%04lX\t", GetIp());
+	return status;
+}
 
-		switch (GetCmd()){
-		case '>':
-		case '<':
-		case '+':
-		case '-':
-			fprintf(stderr, "CMD:'%c(%d)'\t",GetCmd(), GetBias());
-			break;
-		case '[':
-		case ']':
-			fprintf(stderr, "CMD:'%c'(%lu)\t",GetCmd(), GetStackPtr());
-			break;
-		default:
-			fprintf(stderr, "CMD:'%c'\t\t",GetCmd());
-			break;
+uint8_t LoadBF(char *fName, BfHeader_t *Header, uint16_t *MemoryPtr){
+	uint8_t status = 0;
+	std::ifstream File(fName, std::ifstream::binary);
+	if (!File.good()){
+		return -1;
+	}
+	LoadImage(File, Header, MemoryPtr);
+	return status;
+}
+
+bool SegFault(const BfSection_t &section, uint16_t Ptr){
+	bool result = false;
+	if ((Ptr < section.Position.Word) ||(Ptr > section.Position.Word + section.Length.Word)){
+		result = true;
+	}
+	return result;
+}
+
+uint8_t ExecCmd(BfHeader_t *Header, uint16_t *MemoryPtr, uint16_t &IP, uint16_t &AP){
+	uint8_t status = SUCCESS;
+	uint16_t cmd = MemoryPtr[IP];
+	uint16_t cmd_bin = ((cmd>>13) & 0x0007);
+	bool sign = ((cmd >> 12)&0x01)? true: false;
+	uint16_t bias = (cmd&0x0FFF);
+
+	switch (cmd_bin){
+	case 0:
+		MemoryPtr[AP] = sign? MemoryPtr[AP] - bias: MemoryPtr[AP] + bias;
+		break;
+	case 1:
+		AP = sign? AP - bias: AP + bias;
+		if (SegFault(Header->Data, AP)){
+			return -1;
 		}
-		char MemoryStr[256];
-		PrintMemory(MemoryStr, 7);
-		fprintf(stderr, "%s\n", MemoryStr);
-	}
-
-}
-
-
-int ExecCmd(uint8_t cmd){
-	int status = SUCCESS;
-	switch(cmd){
-		case '>':
-			__itt_task_begin(domain, __itt_null, __itt_null, handle_next);
-			status = NextReg();
-			__itt_task_end(domain);
-			break;
-		case '<':
-			__itt_task_begin(domain, __itt_null, __itt_null, handle_prev);
-			status = PrevReg();
-			__itt_task_end(domain);
-			break;
-		case '+':
-			__itt_task_begin(domain, __itt_null, __itt_null, handle_inc);
-			SetVal(Inc(GetVal()));
-			__itt_task_end(domain);
-			break;
-		case '-':
-			__itt_task_begin(domain, __itt_null, __itt_null, handle_dec);
-			SetVal(Dec(GetVal()));
-			__itt_task_end(domain);
-			break;
-		case '[':
-			__itt_task_begin(domain, __itt_null, __itt_null, handle_begin);
-			if (GetVal())
-			{
-				status = CycleAddLayer();
-			}
-			else
-			{
-				status = CycleSkipLayer();
-			}
-			__itt_task_end(domain);
-			break;
-		case ']':
-			__itt_task_begin(domain, __itt_null, __itt_null, handle_loop);
-			if (GetVal())
-			{
-				status = CycleRestartLayer();
-			}
-			else
-			{
-				status = CycleRemoveLayer();
-			}
-
-			__itt_task_end(domain);
-
-			break;
-		case '.':
-			__itt_task_begin(domain, __itt_null, __itt_null, handle_out);
-			Out(GetVal());
-			__itt_task_end(domain);
-			break;
-		case ',':
-			__itt_task_begin(domain, __itt_null, __itt_null, handle_in);
-			SetVal(In());
-			__itt_task_end(domain);
-			break;
-		case '~':
-			PrintDebug();
-			break;
-		case 0://End of the program
-			status = ERROR;
-			break;
-		default:
-			break;
+		break;
+	case 2:
+		MemoryPtr[AP] = In();
+		break;
+	case 3:
+		Out(MemoryPtr[AP]);
+		break;
+	case 4:
+		IP = MemoryPtr[AP]? IP : (sign? IP - bias: IP + bias);
+		if (SegFault(Header->Data, IP)){
+			return -1;
 		}
+		break;
+	case 5:
+		IP = MemoryPtr[AP]? (sign? IP - bias: IP + bias) : IP;
+		if (SegFault(Header->Data, IP)){
+			return -1;
+		}
+		break;
+	case 6:
+		IP = bias;
+		if (SegFault(Header->Data, IP)){
+			return -1;
+		}
+		break;
+	case 7:
+		AP = Header->Data.Position.Word + bias;
+		if (SegFault(Header->Data, AP)){
+			return -1;
+		}
+		break;
+	}
 	return status;
 }
 
-#define UP_FRONT true
-#define DOWN_FRONT false
+uint8_t ExecCode(BfHeader_t *Header, uint16_t *MemoryPtr){
+	uint8_t status = 0;
 
-bool front = UP_FRONT;
+	uint16_t IP = Header->Code.Position.Word;
+	uint16_t AP = Header->Data.Position.Word;
 
-int Tick(void){
+	do {
 
-	__itt_task_begin(domain, __itt_null, __itt_null, handle_tack);
+		status = ExecCmd(Header,MemoryPtr, IP, AP);
+		if (status){
+			return -1;
+		}
 
-
-	PrintDebug();
-	OverallInstructionNumber++;
-	if ((OverallInstructionNumber) && !(OverallInstructionNumber % 1000000))
-	{
-		fprintf(stderr, "OverallInstructionNumber = %lluM\r", OverallInstructionNumber / 1000000);
-	}
-
-	int status = ExecCmd(GetCmd());
+		IP++;
+	}while (IP < Header->Code.Position.Word + Header->Code.Length.Word);
 
 	return status;
 }
-
-int Tack(){
-
-	__itt_task_begin(domain, __itt_null, __itt_null, handle_tick);
-	IncIp();
-
-	return 1;
-}
-
-
-
-int Period(){
-
-	int status = 1;
-	if (front == UP_FRONT){
-		status = Tick();
-		front = DOWN_FRONT;
-	}
-	else{
-		status = Tack();
-		front = UP_FRONT;
-	}
-	WaitClock();
-	__itt_task_end(domain);
-	return status;
-}
-
-
-int ExecProgram(void){
-	//Start Program:
-	while(Period() == SUCCESS){
-
-	}
-	return 0;
-}
-
 
 
 int main(int argc, char *argv[]) {
-	__itt_task_begin(domain, __itt_null, __itt_null, handle_main);
 	int status = -1;
-	unsigned int clock = 0;
 	int c = 0;
+	char filePath[4096] = {0x00};
 	while((c = getopt(argc, argv, "f:c:di")) != -1){
 		switch(c)
 		{
 		case 'f':
-			status = OpenListing(optarg);
-			break;
-		case 'c':
-			clock = atol(optarg);
-			break;
-		case 'd':
-			DelayOff();
-			break;
-		case 'i':
-			SetInstrumented();
+			strcpy(filePath,optarg);
 			break;
 		}
 	}
-	if (status){
-		fprintf(stderr, "Parameters error\n");
+	if (*filePath == 0){
+		cout << "Fatal error: add input file"<< endl;
 		return -1;
 	}
-	if (IsDelay())
-	{
-		if (clock == 0){
-			clock = DEFAULT_FREQUENCY;
-		}
-		PrepareClock(clock);
-
+	BfHeader_t *Header = new BfHeader_t;
+	uint16_t Memory[65536];
+	memset(&Memory,0,sizeof(Memory));
+	status = LoadBF(filePath,Header,Memory);
+	if (status){
+		return -1;
 	}
+	ExecCode(Header, Memory);
 
-	ExecProgram();
-
-	__itt_task_end(domain);
 	return 0;
 }

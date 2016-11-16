@@ -22,8 +22,7 @@ size_t GetCharLength(uint8_t *str)
 	return length;
 }
 
-void Out(uint8_t val){
-	WaitRelay(CONSOLE_LOAD_DELAY);
+void Out(uint16_t val){
 	if (val < 0x20)
 	{
 		fprintf(stderr, "(%02x)", val);
@@ -36,7 +35,6 @@ void Out(uint8_t val){
 
 
 uint8_t In(void){
-	WaitRelay(CONSOLE_STORE_DELAY);
 	uint8_t val = 0;
 	if (stringIsFree == true)
 	{
