@@ -1,0 +1,3 @@
+[submodule "bfpp"]
+	path = bfpp
+	url = https://github.com/radiolok/bfpp.git
